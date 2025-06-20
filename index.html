@@ -1,7 +1,6 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html>
 <head>
-  <title>Ino DB</title>
+  <title>Ino DB - Tambah Nomor (API)</title>
   <style>
     body {
       font-family: 'Courier New', monospace;
@@ -38,34 +37,24 @@
   <h1>Login</h1>
   <input type="text" id="username" placeholder="Username">
   <input type="password" id="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-
-  <div id="app" style="display:none">
-    <h2>Tambah Nomor</h2>
+  <button onclick="login()">Login</button>  <div id="app" style="display:none">
+    <h2>Tambah Nomor (Update GitHub)</h2>
     <input type="text" id="number" placeholder="Masukkan Nomor">
-    <select id="targetFile"></select>
-    <button onclick="addNumber()">Tambah Nomor</button>
+    <select id="targetFile">
+      <option value="pt">pt.json</option>
+      <option value="resseler">resseler.json</option>
+      <option value="extan">extan.json</option>
+    </select>
+    <button onclick="addNumberToGitHub()">Tambah & Upload ke GitHub</button>
     <div id="status"></div>
-  </div>
-
-<script>
+  </div><script>
 const users = {
   "adminpt": { password: "FORPETE", tag: "pt" },
   "adminress": { password: "RESSELERINO", tag: "resseler" }
 };
 
-const files = {
-  "resseler": [
-    { name: "Esce", url: "https://raw.githubusercontent.com/guaino1/Extan/refs/heads/main/extan.json" }
-  ],
-  "pt": [
-    { name: "pt Vip", url: "https://raw.githubusercontent.com/guaino1/guaino1/refs/heads/main/pt.json" },
-    { name: "resseler", url: "https://raw.githubusercontent.com/guaino1/datawa/refs/heads/main/resseler.json" }, 
-    { name: "Sc", url: "https://raw.githubusercontent.com/guaino1/Extan/refs/heads/main/extan.json" }
-  ]
-};
-
 let userTag = "";
+const API_URL = "./express.js"; // Ganti dengan URL API Express-mu
 
 function login() {
   const u = document.getElementById("username").value;
@@ -73,45 +62,37 @@ function login() {
   if (users[u] && users[u].password === p) {
     userTag = users[u].tag;
     document.getElementById("app").style.display = "block";
-    renderFileOptions();
     alert("Login berhasil sebagai " + userTag);
   } else {
     alert("Login gagal");
   }
 }
 
-function renderFileOptions() {
-  const select = document.getElementById("targetFile");
-  select.innerHTML = "";
-  files[userTag].forEach(f => {
-    const opt = document.createElement("option");
-    opt.value = f.url;
-    opt.text = f.name;
-    select.add(opt);
-  });
-}
-
-async function addNumber() {
+async function addNumberToGitHub() {
   const nomor = document.getElementById("number").value;
-  const fileUrl = document.getElementById("targetFile").value;
+  const file = document.getElementById("targetFile").value;
   if (!nomor) return alert("Masukkan nomor dulu");
 
-  document.getElementById("status").innerText = "Menambahkan...";
+  document.getElementById("status").innerText = "Mengirim ke GitHub...";
 
   try {
-    const res = await fetch(fileUrl);
-    let data = await res.json();
-    if (!Array.isArray(data)) data = [];
-    data.push(nomor);
+    const res = await fetch(`${API_URL}/data/${file}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nomor: nomor })
+    });
 
-    alert("Nomor berhasil ditambahkan secara lokal. Untuk menyimpan ke GitHub, perlu implementasi API GitHub.");
-    console.log("Hasil file baru:", JSON.stringify(data, null, 2));
-    document.getElementById("status").innerText = "Nomor ditambahkan. Cek console.";
-  } catch (e) {
-    document.getElementById("status").innerText = "Gagal mengambil file.";
-    alert("Gagal mengambil file JSON.");
+    if (res.ok) {
+      document.getElementById("status").innerText = "Nomor berhasil ditambahkan ke GitHub.";
+      alert("Berhasil!");
+    } else {
+      document.getElementById("status").innerText = "Gagal upload.";
+      alert("Gagal menyimpan ke GitHub.");
+    }
+  } catch (err) {
+    document.getElementById("status").innerText = "Terjadi kesalahan.";
+    alert("Terjadi kesalahan.");
   }
 }
-</script>
-</body>
+</script></body>
 </html>

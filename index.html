@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ino DB</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #0f0f0f;
+      color: #0ff;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #0ff;
+      text-shadow: 0 0 5px #0ff;
+    }
+    input, button, select {
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #0ff;
+      background-color: #000;
+      color: #0ff;
+      width: 100%;
+      border-radius: 4px;
+      box-shadow: 0 0 5px #0ff;
+    }
+    button:hover {
+      background-color: #0ff;
+      color: #000;
+    }
+    #status {
+      margin-top: 10px;
+      color: #0ff;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Login</h1>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+
+  <div id="app" style="display:none">
+    <h2>Tambah Nomor</h2>
+    <input type="text" id="number" placeholder="Masukkan Nomor">
+    <select id="targetFile"></select>
+    <button onclick="addNumber()">Tambah Nomor</button>
+    <div id="status"></div>
+  </div>
+
+<script>
+const users = {
+  "adminpt": { password: "FORPETE", tag: "pt" },
+  "adminress": { password: "RESSELERINO", tag: "resseler" }
+};
+
+const files = {
+  "resseler": [
+    { name: "extan.json", url: "https://raw.githubusercontent.com/guaino1/datawa/refs/heads/main/resseler.json" }
+  ],
+  "pt": [
+    { name: "pt.json", url: "https://raw.githubusercontent.com/guaino1/guaino1/refs/heads/main/pt.json" },
+    { name: "resseler.json", url: "https://raw.githubusercontent.com/guaino1/datawa/refs/heads/main/resseler.json" }
+  ]
+};
+
+let userTag = "";
+
+function login() {
+  const u = document.getElementById("username").value;
+  const p = document.getElementById("password").value;
+  if (users[u] && users[u].password === p) {
+    userTag = users[u].tag;
+    document.getElementById("app").style.display = "block";
+    renderFileOptions();
+    alert("Login berhasil sebagai " + userTag);
+  } else {
+    alert("Login gagal");
+  }
+}
+
+function renderFileOptions() {
+  const select = document.getElementById("targetFile");
+  select.innerHTML = "";
+  files[userTag].forEach(f => {
+    const opt = document.createElement("option");
+    opt.value = f.url;
+    opt.text = f.name;
+    select.add(opt);
+  });
+}
+
+async function addNumber() {
+  const nomor = document.getElementById("number").value;
+  const fileUrl = document.getElementById("targetFile").value;
+  if (!nomor) return alert("Masukkan nomor dulu");
+
+  document.getElementById("status").innerText = "Menambahkan...";
+
+  try {
+    const res = await fetch(fileUrl);
+    let data = await res.json();
+    if (!Array.isArray(data)) data = [];
+    data.push(nomor);
+
+    alert("Nomor berhasil ditambahkan secara lokal. Untuk menyimpan ke GitHub, perlu implementasi API GitHub.");
+    console.log("Hasil file baru:", JSON.stringify(data, null, 2));
+    document.getElementById("status").innerText = "Nomor ditambahkan. Cek console.";
+  } catch (e) {
+    document.getElementById("status").innerText = "Gagal mengambil file.";
+    alert("Gagal mengambil file JSON.");
+  }
+}
+</script>
+</body>
+</html>
